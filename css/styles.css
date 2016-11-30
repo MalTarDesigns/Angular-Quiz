@@ -1,0 +1,29 @@
+.turtle-img {
+    width: 100%;
+    height: 160px;
+}
+.answer{
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #bbb;
+}
+.answer:hover{
+    cursor: pointer;
+}
+
+.img-answer{
+    cursor: pointer;
+    height: 350px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.img-answer img{
+    width: 100%;
+    height: auto;
+}
+
+.img-selected{
+    border: 3px solid #56afdc;
+}

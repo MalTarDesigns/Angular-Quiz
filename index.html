@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="Quiz">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Turtle Quiz</title>
+    <!-- Bootstrap -->
+    <link  rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+
+     <div class="container">
+        <div class="page-header">
+            <h1>Turtle Facts Quiz</h1>
+            <h3>
+                Learn about all the turtles below before you decide to take on the 
+                <strong>TURTLE QUIZ</strong>
+            </h3>
+        </div>
+        <div ng-controller="listCtrl as list" ng-hide="list.quizFactory.quizActive || list.quizFactory.resultsActive">
+            <form class="form-inline well well-sm">
+                <input type="text" class="form-control" placeholder="Search...." ng-model="list.search">
+                <button class="btn btn-success pull-right"
+                    ng-click="list.activeQuiz();">Start Quiz</button>
+            </form>
+            <div class="row">
+                <div class="col-sm-6" ng-repeat="turtle in list.turtles | filter: list.search">
+                    <div class="well well-sm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img ng-src="{{turtle.image_url}}" alt="{{turtle.type}}" class="img-responsive img-rounded turtle-img">
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{turtle.type}}</h4>
+                                <p><strong>Location(s): </strong>{{turtle.locations}}</p>
+                                <p><strong>Size: </strong>{{turtle.size}}</p>
+                                <p><strong>Average Lifespan: </strong>{{turtle.lifespan}}</p>
+                                <p><strong>Diet: </strong>{{turtle.diet}}</p>
+                                <button class="btn btn-primary pull-right"
+                                    data-toggle="modal"
+                                    data-target="#turtle-info" 
+                                    data-ng-click="list.changeActiveTurtle(turtle)">Learn More</button>    
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal" id="turtle-info">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <!-- activeTurtle holds the turtle data --> 
+                            <h2>{{list.activeTurtle.type}}</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-xs-8 col-xs-offset-2">
+                                    <img ng-src="{{list.activeTurtle.image_url}}" alt="{{list.activeTurtle.type}}" class="img-responsive img-rounded">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p><strong>Location(s): </strong>{{list.activeTurtle.locations}}</p>
+                                    <p><strong>Size: </strong>{{list.activeTurtle.size}}</p>
+                                    <p><strong>Average Lifespan: </strong>{{list.activeTurtle.lifespan}}</p>
+                                    <p><strong>Diet: </strong>{{list.activeTurtle.diet}}</p>
+                                    <p>{{list.activeTurtle.description}}</p>
+                                    <button class="btn btn-danger pull-right"
+                                        data-dismiss="modal">Close</button> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!--/ listCtrl -->
+        
+        <div ng-controller="quizCtrl as quiz" ng-show="quiz.quizFactory.quizActive">
+            <div class="row">
+                <div class="col-xs-8">
+                    <h2>Progress:</h2>
+                    <div class="btn-toolbar">
+                        <button class="btn"
+                            ng-repeat="question in quiz.questions"
+                            ng-class="{'btn-info': question.selected != null, 'btn-danger': question.selected === null}"
+                            ng-click="quiz.setActiveQuestion($index)">
+                        <i class="fa" 
+                            ng-class="{'fa-pencil': question.selected !== null, 'fa-question-circle-o': question.selected === null}" 
+                            aria-hidden="true">
+                        </i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <h4>Ledgend:</h4>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <button class="btn btn-info"> <i class ="fa fa-pencil" aria-hidden="true"></i>
+                            </button>
+                            <p>Answered</p>
+                        </div>
+                        <div class="col-xs-4">
+                            <button class="btn btn-danger"> <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                            </button>
+                            <p>Unanswered</p>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- progress row -->
+            <h3>Question:</h3>
+            <div class="well well-sm" ng-hide="quiz.finalize">
+                <div class="alert alert-danger" ng-show="quiz.error">
+                    Error!!!!!!!!!!!!!! You have more question to answer.
+                    <button class="close" ng-click="quiz.error = false">
+                        &times
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h4>{{quiz.activeQuestion+1 + ". " + quiz.questions[quiz.activeQuestion].text}}</h4>
+                        <div class="row" ng-if="quiz.questions[quiz.activeQuestion].type === 'text'">
+                            <div class="col-sm-6" ng-repeat="answer in quiz.questions[quiz.activeQuestion].possibilities">
+                                <h4 class="answer"
+                                    ng-class="{'bg-info': $index === quiz.questions[quiz.activeQuestion].selected}"
+                                    ng-click="quiz.selectAnswer($index)">
+                                    {{answer.answer}}
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="row" ng-if="quiz.questions[quiz.activeQuestion].type === 'image'">
+                            <div class="col-sm-6" ng-repeat="answer in quiz.questions[quiz.activeQuestion].possibilities">
+                                <div class="img-answer"
+                                    ng-class="{'img-selected': $index === quiz.questions[quiz.activeQuestion].selected}"
+                                    ng-click="quiz.selectAnswer($index)">
+                                    <img ng-src="{{answer.answer}}"> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-success" ng-click="quiz.questionAnswered();">Continue</button>
+            </div><!-- questions well end -->
+
+            <div class="well well-sm"
+                ng-show="quiz.finalize">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h4>Are you sure you want to submit your answers?</h4>
+                        <button class="btn btn-success" ng-click="quiz.finalizeQuiz()">
+                            Yes
+                        </button>
+                        <button class="btn btn-danger" ng-click="quiz.finalize = false">
+                            No
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+        </div><!--/ quizCtrl -->
+
+        <div ng-controller="resultsCtrl as results" ng-show="results.quizFactory.resultsActive">
+             
+            <div class="row">
+                <div class="col-xs-8">
+                    <h2>Progress:</h2>
+                    <div class="btn-toolbar">
+                        <button class="btn"
+                            ng-repeat="question in results.questions"
+                            ng-class="{'btn-success': question.correct, 'btn-danger': !question.correct}"
+                            ng-click="quiz.setActiveQuestion($index)">
+                        <i class="fa" 
+                            ng-class="{'fa-times': !question.correct, 'fa-check': question.correct}" 
+                            aria-hidden="true">
+                        </i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <h4>Ledgend:</h4>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <button class="btn btn-success"> <i class ="fa fa-check" aria-hidden="true"></i>
+                            </button>
+                            <p>Correct</p>
+                        </div>
+                        <div class="col-xs-4">
+                            <button class="btn btn-danger"> <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                            <p>Incorrect</p>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- progress row -->
+
+
+        </div>
+    
+    
+    </div><!--/ .container -->
+	
+
+
+    <!-- Third party js -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0-rc.2/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+ 
+    <!-- Application scripts -->
+    <script src="js/app.module.js"></script>
+    
+    <script src="js/services/turtle.factory.js"></script>
+    <script src="js/list/list.js"></script>
+    <script src="js/quiz/quiz.factory.js"></script>
+    <script src="js/quiz/quiz.js"></script>
+    <script src="js/results/results.js"></script>
+  </body>
+</html>
